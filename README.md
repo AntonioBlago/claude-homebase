@@ -76,6 +76,7 @@ SEO data for any path: [Visibly AI](https://www.visibly-ai.com/?utm_source=githu
 
 ## Read more
 
+- [How to set up Claude Code: a guide for beginners](https://www.antonioblago.com/blog/how-to-set-up-claude-code?utm_source=github&utm_medium=readme&utm_campaign=claude-homebase) (German: [Claude Code installieren und einrichten](https://www.antonioblago.com/de/blog/claude-code-installieren-einrichten?utm_source=github&utm_medium=readme&utm_campaign=claude-homebase))
 - [Best Claude Code skills for developers (with a 26-billion-token measurement)](https://www.antonioblago.com/blog/best-claude-code-skills-developers?utm_source=github&utm_medium=readme&utm_campaign=claude-homebase)
 - [AI hallucinations and the DELEGATE-52 rules](https://www.antonioblago.com/blog/ki-halluzinationen-delegate-52-en?utm_source=github&utm_medium=readme&utm_campaign=claude-homebase)
 - [Agentic engineering: 100+ SEO projects solo with AI](https://www.antonioblago.com/blog/agentic-engineering-seo-projects-ai-en?utm_source=github&utm_medium=readme&utm_campaign=claude-homebase)
@@ -90,7 +91,7 @@ Ziele, wiederkehrenden Aufgaben, Infrastruktur, deinen Startordner und dein Star
 Aufgaben und eine Learnings-Ablage. Claude Code installieren: unter Windows in PowerShell `irm https://claude.ai/install.ps1 | iex`,
 dann den Ordner `skills/homebase` nach `%USERPROFILE%\.claude\skills\` kopieren und `/homebase` eingeben. Claude
 antwortet in deiner Sprache, Ordnernamen gibt es auf Wunsch auf Deutsch (Projekte, Vorlagen, Werkzeuge).
-Ausführlich: [Claude Code Skills für Entwickler](https://www.antonioblago.com/de/blog/claude-code-skills-entwickler?utm_source=github&utm_medium=readme&utm_campaign=claude-homebase).
+Ausführlich: [Claude Code installieren und einrichten](https://www.antonioblago.com/de/blog/claude-code-installieren-einrichten?utm_source=github&utm_medium=readme&utm_campaign=claude-homebase).
 
 ## License
 
