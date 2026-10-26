@@ -1,5 +1,9 @@
 # Claude Homebase: how to set up Claude Code with one structure for everything
 
+<p align="center">
+  <img src="docs/assets/homebase.png" alt="Claude Homebase: an isometric base with one building per level: role (CLAUDE.md), tasks (skills/), projects, knowledge (learnings/), tools" width="100%">
+</p>
+
 A free starter for anyone who just installed Claude Code and asks "where do I put things?". One skill, `/homebase`,
 interviews you (role, goals, recurring tasks, infrastructure, start folder, starter path), saves your answers and builds
 a Claude Code setup that works for any kind of work, not only code:
@@ -41,6 +45,10 @@ Copy-Item -Recurse claude-homebase\skills\homebase $env:USERPROFILE\.claude\skil
 Restart Claude Code and type `/homebase`.
 
 ## 3. The structure it builds
+
+<p align="center">
+  <img src="docs/assets/homebase-build.gif" alt="The home base built block by block: CLAUDE.md house, skills workshop, project houses, learnings tower, tools shed" width="720">
+</p>
 
 ```
 ~/.claude/                         WHO you are (applies everywhere)
