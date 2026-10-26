@@ -3,35 +3,87 @@
 
 role (CLAUDE.md) -> tasks (skills/) -> projects (projects/<name>/) -> knowledge (learnings/) -> tools (tools/)
 
-Outputs (next to this script):
-  homebase.png        1280x640, README header and GitHub social preview
-  homebase-build.gif  960x480, the base built block by block
+Outputs (next to this script, or in --out):
+  homebase.png                 1280x640, README header and GitHub social preview
+  homebase-build.gif           960x480, the base built block by block
+  --layout portrait | square   1080x1350 or 1080x1080 for social feeds (PNG and GIF, "_portrait" / "_square")
 
+Usage:  python build_homebase.py [--layout wide|portrait|square|all] [--no-gif] [--out DIR]
 Needs Pillow only:  pip install pillow
 Fonts: Montserrat and Aptos from HOMEBASE_FONT_DIR (falls back to the Pillow default font).
 """
 import hashlib
 import math
 import os
+import sys
 
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 FONT_DIR = os.environ.get("HOMEBASE_FONT_DIR", r"C:\Users\anton\OneDrive\Mabya\Dokumente\Claude\fonts")
 
-W, H = 1280, 640                     # design canvas
 BG = (12, 17, 21)                    # #0c1115
 ORANGE = (246, 87, 30)               # #f6571e
 ORANGE2 = (255, 145, 44)             # #ff912c
 WHITE = (255, 255, 255)
 GREY = (201, 205, 210)               # #c9cdd2
-GREY2 = (139, 144, 150)              # #8b9096
 CARD = (19, 24, 30)                  # #13181e
+R = 10.5                             # plateau radius (superellipse, grid units)
 
-# island geometry (grid units) and screen placement (design px)
-R = 10.5                              # plateau radius (superellipse)
-U = 18                                # half tile width in px at scale 1
-CX, CY = 862, 326                     # screen position of grid origin
+LINE1 = "One structure for every role:"
+LINE2 = "role, tasks, projects, knowledge, tools."
+
+# ------------------------------------------------------------------ layouts (design px at scale 1)
+# labels: num, title, folder, pill position, anchor point (grid x, y, z), align, accent
+LAYOUTS = {
+    "wide": dict(
+        size=(1280, 640), origin=(862, 326), unit=18, suffix="",
+        text=dict(x=64, eyebrow=50, h1=76, h1_size=54, h1_text="Claude\nHomebase", sub=216, sub_size=22,
+                  line=252, line_size=15, line_text=LINE1 + "\n" + LINE2, rule=588, foot=603),
+        labels=[
+            (1, "Role", "CLAUDE.md", (778, 56), (-2.5, -2.5, 9), "left", True),
+            (2, "Tasks", "skills/", (436, 336), (-1, 11, 5), "left", False),
+            (3, "Projects", "projects/<name>/", (1226, 60), (5.5, -5.5, 5), "right", False),
+            (4, "Knowledge", "learnings/", (420, 154), (-10, 1, 4), "left", False),
+            (5, "Tools", "tools/, MCP, hooks", (1232, 416), (10, 2, 5), "right", False),
+        ]),
+    "portrait": dict(
+        size=(1080, 1350), origin=(540, 760), unit=26, suffix="_portrait",
+        text=dict(x=72, eyebrow=72, h1=96, h1_size=60, h1_text="Claude Homebase", sub=176, sub_size=24,
+                  line=214, line_size=16, line_text=LINE1 + " " + LINE2, rule=1270, foot=1286),
+        labels=[
+            (1, "Role", "CLAUDE.md", (455, 402), (-2.5, -2.5, 9), "left", True),
+            (2, "Tasks", "skills/", (72, 835), (-1, 11, 5), "left", False),
+            (3, "Projects", "projects/<name>/", (1008, 545), (8.5, -5.5, 5), "right", False),
+            (4, "Knowledge", "learnings/", (72, 429), (-8.5, -1.5, 7), "left", False),
+            (5, "Tools", "tools/, MCP, hooks", (1008, 890), (10, 2, 5), "right", False),
+        ]),
+    "square": dict(
+        size=(1080, 1080), origin=(540, 635), unit=22, suffix="_square",
+        text=dict(x=72, eyebrow=56, h1=78, h1_size=52, h1_text="Claude Homebase", sub=146, sub_size=20,
+                  line=180, line_size=15, line_text=LINE1 + " " + LINE2, rule=1008, foot=1022),
+        labels=[
+            (1, "Role", "CLAUDE.md", (455, 323), (-2.5, -2.5, 9), "left", True),
+            (2, "Tasks", "skills/", (72, 700), (-1, 11, 5), "left", False),
+            (3, "Projects", "projects/<name>/", (1008, 450), (8.5, -5.5, 5), "right", False),
+            (4, "Knowledge", "learnings/", (100, 352), (-8.5, -1.5, 7), "left", False),
+            (5, "Tools", "tools/, MCP, hooks", (1008, 780), (10, 2, 5), "right", False),
+        ]),
+}
+
+L = None            # active layout
+W = H = CX = CY = U = 0
+
+
+def set_layout(name):
+    global L, W, H, CX, CY, U
+    L = LAYOUTS[name]
+    W, H = L["size"]
+    CX, CY = L["origin"]
+    U = L["unit"]
+
+
+set_layout("wide")
 
 
 # ------------------------------------------------------------------ materials
@@ -271,7 +323,7 @@ def background(S):
         yy += step
     glow = Image.new("RGB", img.size, BG)
     gd = ImageDraw.Draw(glow)
-    gx, gy, gr = 0.88 * W * S, 0.12 * H * S, 340 * S
+    gx, gy, gr = 0.88 * W * S, 0.12 * H * S, 0.27 * W * S
     for i in range(18, 0, -1):
         r = gr * i / 18
         a = int(40 * (1 - i / 18) ** 1.5)
@@ -287,18 +339,18 @@ def lamp_glow(img, blocks, S):
         if mat != "lamp":
             continue
         cx, cy = P(x + 0.5, y + 0.5, z + 0.5, S)
-        r = 46 * S
+        r = 2.6 * U * S
         d.ellipse([cx - r, cy - r, cx + r, cy + r], fill=(255, 170, 60, 70))
-    layer = layer.filter(ImageFilter.GaussianBlur(22 * S))
+    layer = layer.filter(ImageFilter.GaussianBlur(1.2 * U * S))
     return Image.alpha_composite(img.convert("RGBA"), layer).convert("RGB")
 
 
-def pill(img, d, x, y, num, title, folder, S, accent=False, anchor=None, align="left"):
+def pill(d, x, y, num, title, folder, S, accent=False, anchor=None, align="left"):
     fb = font("Montserrat-Bold.ttf", 17, S)
     fs = font("Aptos-SemiBold.ttf", 14, S)
-    num_t, title_t = f"{num}", title
+    num_t = f"{num}"
     w_num = d.textlength(num_t, font=fb)
-    w_title = d.textlength(title_t, font=fb)
+    w_title = d.textlength(title, font=fb)
     w_folder = d.textlength(folder, font=fs)
     padx, gap = 14 * S, 10 * S
     w = padx + w_num + 8 * S + w_title + gap + w_folder + padx
@@ -316,37 +368,28 @@ def pill(img, d, x, y, num, title, folder, S, accent=False, anchor=None, align="
     d.rounded_rectangle(box, radius=10 * S, fill=CARD + (236,), outline=(255, 255, 255, 28), width=max(1, int(S)))
     ty = y + h / 2
     d.text((x + padx, ty), num_t, font=fb, fill=ORANGE, anchor="lm")
-    d.text((x + padx + w_num + 8 * S, ty), title_t, font=fb, fill=WHITE, anchor="lm")
+    d.text((x + padx + w_num + 8 * S, ty), title, font=fb, fill=WHITE, anchor="lm")
     d.text((x + w - padx, ty + 0.5 * S), folder, font=fs, fill=ORANGE if accent else GREY, anchor="rm")
     return box
 
 
-LABELS = [  # num, title, folder, pill position (design px), anchor point (grid x, y, z), align, accent
-    (1, "Role", "CLAUDE.md", (778, 56), (-2.5, -2.5, 9), "left", True),
-    (2, "Tasks", "skills/", (436, 336), (-1, 11, 5), "left", False),
-    (3, "Projects", "projects/<name>/", (1226, 60), (5.5, -5.5, 5), "right", False),
-    (4, "Knowledge", "learnings/", (420, 154), (-10, 1, 4), "left", False),
-    (5, "Tools", "tools/, MCP, hooks", (1232, 416), (10, 2, 5), "right", False),
-]
-
-
 def draw_text_block(d, S, with_title=True):
+    t = L["text"]
     f_eye = font("Montserrat-SemiBold.ttf", 12, S)
-    f_h1 = font("Montserrat-ExtraBold.ttf", 54, S)
-    f_sub = font("Montserrat-Bold.ttf", 22, S)
-    f_line = font("Montserrat-SemiBold.ttf", 15, S)
+    f_h1 = font("Montserrat-ExtraBold.ttf", t["h1_size"], S)
+    f_sub = font("Montserrat-Bold.ttf", t["sub_size"], S)
+    f_line = font("Montserrat-SemiBold.ttf", t["line_size"], S)
     f_foot = font("Montserrat-SemiBold.ttf", 15, S)
-    x = 64 * S
+    x = t["x"] * S
     if with_title:
-        d.text((x, 50 * S), "C L A U D E   C O D E   ·   F R E E   S T A R T E R", font=f_eye, fill=ORANGE)
-        d.text((x, 76 * S), "Claude\nHomebase", font=f_h1, fill=WHITE, spacing=-4 * S)
-        d.text((x, 216 * S), "Build your base, block by block", font=f_sub, fill=ORANGE)
-        d.text((x, 252 * S), "One structure for every role:\nrole, tasks, projects, knowledge, tools.", font=f_line,
-               fill=GREY, spacing=5 * S)
-    d.rectangle([x, 588 * S, (W - 64) * S, 590 * S], fill=ORANGE)
-    d.text((x, 603 * S), "antonioblago.com", font=f_foot, fill=WHITE)
-    d.text(((W - 64) * S, 603 * S), "github.com/AntonioBlago/claude-homebase  ·  /homebase", font=f_foot, fill=GREY,
-           anchor="ra")
+        d.text((x, t["eyebrow"] * S), "C L A U D E   C O D E   ·   F R E E   S T A R T E R", font=f_eye, fill=ORANGE)
+        d.text((x, t["h1"] * S), t["h1_text"], font=f_h1, fill=WHITE, spacing=-4 * S)
+        d.text((x, t["sub"] * S), "Build your base, block by block", font=f_sub, fill=ORANGE)
+        d.text((x, t["line"] * S), t["line_text"], font=f_line, fill=GREY, spacing=5 * S)
+    d.rectangle([x, t["rule"] * S, (W - t["x"]) * S, (t["rule"] + 2) * S], fill=ORANGE)
+    d.text((x, t["foot"] * S), "antonioblago.com", font=f_foot, fill=WHITE)
+    d.text(((W - t["x"]) * S, t["foot"] * S), "github.com/AntonioBlago/claude-homebase  ·  /homebase", font=f_foot,
+           fill=GREY, anchor="ra")
 
 
 def render(blocks, labels_upto, S, with_title=True):
@@ -357,17 +400,17 @@ def render(blocks, labels_upto, S, with_title=True):
     img = lamp_glow(img, blocks, S)
     over = Image.new("RGBA", img.size, (0, 0, 0, 0))
     d = ImageDraw.Draw(over)
-    for num, title, folder, (px, py), (ax, ay, az), align, accent in LABELS:
+    for num, title, folder, (px, py), (ax, ay, az), align, accent in L["labels"]:
         if num > labels_upto:
             continue
-        pill(over, d, px * S, py * S, num, title, folder, S, accent=accent, anchor=P(ax, ay, az, S), align=align)
+        pill(d, px * S, py * S, num, title, folder, S, accent=accent, anchor=P(ax, ay, az, S), align=align)
     draw_text_block(d, S, with_title)
     return Image.alpha_composite(img.convert("RGBA"), over).convert("RGB")
 
 
 def animation_frames(scene, S, hold_ms=3200):
     """Frames of the build: the island rises layer by layer, then one building after the other, labels appear.
-    Returns (frames, durations in ms) at scale S (1.0 = 1280x640)."""
+    Returns (frames, durations in ms) at scale S (1.0 = layout size)."""
     stages = {}
     for (x, y, z), (mat, st) in scene.blocks.items():
         stages.setdefault(st, []).append((x, y, z))
@@ -392,30 +435,45 @@ def animation_frames(scene, S, hold_ms=3200):
     return frames, durations
 
 
-def main(gif=True):
+def save_gif(frames, durations, path):
+    pal = frames[-1].quantize(colors=255, method=Image.Quantize.MEDIANCUT)
+    q = [f.quantize(palette=pal, dither=Image.Dither.NONE) for f in frames]
+    q[0].save(path, save_all=True, append_images=q[1:], duration=durations, loop=0, disposal=1, optimize=True)
+
+
+def build(layout="wide", gif=True, out_dir=None):
+    set_layout(layout)
+    out_dir = out_dir or HERE
+    os.makedirs(out_dir, exist_ok=True)
     scene = build_scene()
     blocks = scene.visible()
-    print(f"blocks total {len(scene.blocks)}, visible {len(blocks)}")
+    print(f"[{layout}] blocks total {len(scene.blocks)}, visible {len(blocks)}")
 
-    # ---- static PNG, rendered at 2x and downsampled
-    S = 2
-    img = render(blocks, 5, S)
-    img = img.resize((W, H), Image.LANCZOS)
-    out_png = os.path.join(HERE, "homebase.png")
+    S = 2                                                 # static PNG at 2x, downsampled
+    img = render(blocks, 5, S).resize((W, H), Image.LANCZOS)
+    out_png = os.path.join(out_dir, f"homebase{L['suffix']}.png")
     img.save(out_png, optimize=True)
     print("wrote", out_png)
     if not gif:
         return
 
-    # ---- build animation as GIF (960x480)
-    frames, durations = animation_frames(scene, 0.75)
-    pal = frames[-1].quantize(colors=255, method=Image.Quantize.MEDIANCUT)
-    q = [f.quantize(palette=pal, dither=Image.Dither.NONE) for f in frames]
-    out_gif = os.path.join(HERE, "homebase-build.gif")
-    q[0].save(out_gif, save_all=True, append_images=q[1:], duration=durations, loop=0, disposal=1, optimize=True)
+    gif_scale = 0.75 if layout == "wide" else 1.0         # 960x480 for the README, full size for social feeds
+    frames, durations = animation_frames(scene, gif_scale)
+    out_gif = os.path.join(out_dir, f"homebase{L['suffix']}-build.gif")
+    save_gif(frames, durations, out_gif)
     print("wrote", out_gif, f"{os.path.getsize(out_gif) / 1e6:.2f} MB, {len(frames)} frames")
 
 
+def main(argv):
+    layout = "wide"
+    out_dir = None
+    if "--layout" in argv:
+        layout = argv[argv.index("--layout") + 1]
+    if "--out" in argv:
+        out_dir = argv[argv.index("--out") + 1]
+    for name in (LAYOUTS if layout == "all" else [layout]):
+        build(name, gif="--no-gif" not in argv, out_dir=out_dir)
+
+
 if __name__ == "__main__":
-    import sys
-    main(gif="--no-gif" not in sys.argv)
+    main(sys.argv[1:])
