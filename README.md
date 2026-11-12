@@ -17,6 +17,8 @@ a Claude Code setup that works for any kind of work, not only code:
 
 No dependencies, no network calls, nothing is installed or sent without your yes.
 
+> **Want the full setup?** This free repo is the foundation layer of a larger kit. The [Claude Code Starter Set](https://www.antonioblago.com/skills/claude-code-starter-set?utm_source=github&utm_medium=readme&utm_campaign=starter-set&utm_content=claude-homebase) bundles 61 skills, 3 safety hooks, 7 agent roles and an installer with dry run and backup, plus three courses. One purchase (399 €), updates included. The kit is currently in German, an English edition is in preparation.
+
 ## 1. Install Claude Code (setup in 2 minutes)
 
 Claude Code needs a paid Claude plan (Pro, Max, Team) or an API account. The free claude.ai plan does not include it.
