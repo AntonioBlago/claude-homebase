@@ -19,6 +19,32 @@ No dependencies, no network calls, nothing is installed or sent without your yes
 
 > **Want the full setup?** This free repo is the foundation layer of a larger kit. The [Claude Code Starter Set](https://www.antonioblago.com/skills/claude-code-starter-set?utm_source=github&utm_medium=readme&utm_campaign=starter-set&utm_content=claude-homebase) bundles 61 skills, 3 safety hooks, 7 agent roles and an installer with dry run and backup, plus three courses. One purchase (399 €), updates included. The kit is currently in German, an English edition is in preparation.
 
+## Install as a plugin
+
+Already running Claude Code? Two commands install `/homebase` and Context Guard:
+
+```
+/plugin marketplace add AntonioBlago/claude-code-seo-starter
+/plugin install homebase@antonioblago
+```
+
+Then type `/homebase:homebase` (it also shows up as `/homebase` in the slash menu when the name is unique). The plugin
+contains:
+
+- the skill `homebase` (the interview described below)
+- [Context Guard](https://github.com/AntonioBlago/claude-context-guard): two hooks that warn when a session gets large
+  (from 300k tokens of context) and reload a handoff briefing after `/clear`, plus the skill `handoff`. It needs
+  Python 3.8+ and nothing else; without Python the hooks do nothing and never stop a session.
+
+The marketplace `antonioblago` is hosted in the [claude-code-seo-starter](https://github.com/AntonioBlago/claude-code-seo-starter)
+repo, which also lists the SEO plugin `seo-starter`. Installing one does not install the other.
+
+**Auto-update.** Third-party marketplaces do not update in the background by default. To switch it on, open `/plugin`,
+go to the **Marketplaces** tab, select `antonioblago` and choose **Enable auto-update**. Without it, update by hand with
+`/plugin marketplace update antonioblago` or `claude plugin update homebase@antonioblago`.
+
+The manual steps below do the same without the plugin.
+
 ## 1. Install Claude Code (setup in 2 minutes)
 
 Claude Code needs a paid Claude plan (Pro, Max, Team) or an API account. The free claude.ai plan does not include it.
