@@ -20,7 +20,7 @@ import sys
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-FONT_DIR = os.environ.get("HOMEBASE_FONT_DIR", r"C:\Users\anton\OneDrive\Mabya\Dokumente\Claude\fonts")
+FONT_DIR = os.environ.get("HOMEBASE_FONT_DIR", os.path.join(HERE, "fonts"))
 
 BG = (12, 17, 21)                    # #0c1115
 ORANGE = (246, 87, 30)               # #f6571e
