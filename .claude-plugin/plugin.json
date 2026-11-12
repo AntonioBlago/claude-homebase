@@ -1,0 +1,16 @@
+{
+  "name": "homebase",
+  "displayName": "Claude Homebase",
+  "version": "1.0.0",
+  "description": "Set up Claude Code with one structure for everything: /homebase interviews you and builds your CLAUDE.md, project folders, skills and learnings; Context Guard warns when a session gets large and carries a handoff briefing across /clear. Free. The full kit is the Claude Code Starter Set: https://www.antonioblago.com/skills/claude-code-starter-set",
+  "author": {
+    "name": "Antonio Blago",
+    "url": "https://www.antonioblago.com"
+  },
+  "homepage": "https://github.com/AntonioBlago/claude-homebase",
+  "repository": "https://github.com/AntonioBlago/claude-homebase",
+  "license": "MIT",
+  "keywords": ["claude-code", "setup", "claude-md", "skills", "context", "handoff"],
+  "skills": ["./skills/"],
+  "hooks": "./hooks/hooks.json"
+}
