@@ -28,7 +28,7 @@ Already running Claude Code? Two commands install `/homebase` and Context Guard:
 /plugin install homebase@antonioblago
 ```
 
-Then type `/homebase:homebase` (it also shows up as `/homebase` in the slash menu when the name is unique). The plugin
+Then type `/homebase:homebase`. The plugin
 contains:
 
 - the skill `homebase` (the interview described below)
